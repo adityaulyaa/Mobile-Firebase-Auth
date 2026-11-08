@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "502245804433",
+    "project_id": "fir-login-8632e",
+    "storage_bucket": "fir-login-8632e.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:502245804433:android:3b0bd3ca2855d1c62c3230",
+        "android_client_info": {
+          "package_name": "com.adityaulya.FirebaseAuthWithReactNative"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "502245804433-4h4c4a2nb496d4n8gmjnksmjhoobpfar.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCToHDsu4LXPcgRmMkG7FnDiGkwOadKRZk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "502245804433-4h4c4a2nb496d4n8gmjnksmjhoobpfar.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
