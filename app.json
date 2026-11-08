@@ -18,7 +18,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.adityaulya.FirebaseAuthWithReactNative"
+      "package": "com.adityaulya.FirebaseAuthWithReactNative",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "output": "server",
