@@ -1,18 +1,41 @@
-import React from 'react';
-import { StyleSheet, Pressable, SafeAreaView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Pressable, SafeAreaView, FlatList, View, ActivityIndicator } from 'react-native';
 import { getAuth, signOut } from '@react-native-firebase/auth';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { storage, TOKEN_KEY } from '@/services/storage';
-
-const firebaseAuth = getAuth();
+import { subscribeToMahasiswa, Mahasiswa } from '@/services/firestore';
+import { LoginColors } from '@/constants/loginColors';
 
 export default function HomeScreen() {
+  const firebaseAuth = getAuth();
+  const [students, setStudents] = useState<Mahasiswa[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToMahasiswa(
+      (data) => {
+        setStudents(data);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Firestore error:', err);
+        setError('Failed to fetch student data');
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
   const handleLogout = async () => {
     try {
+      await GoogleSignin.signOut();
       await signOut(firebaseAuth);
       storage.remove(TOKEN_KEY);
       storage.remove('userEmail');
@@ -23,30 +46,58 @@ export default function HomeScreen() {
     }
   };
 
+  const renderStudentItem = ({ item }: { item: Mahasiswa }) => (
+    <ThemedView type="backgroundElement" style={styles.studentCard}>
+      <View style={styles.cardHeader}>
+        <ThemedText style={styles.nimText}>{item.nim}</ThemedText>
+        <View style={styles.badge}>
+          <ThemedText style={styles.badgeText}>{item.jurusan}</ThemedText>
+        </View>
+      </View>
+      <ThemedText type="smallBold" style={styles.namaText}>
+        {item.nama}
+      </ThemedText>
+    </ThemedView>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ThemedView style={styles.container}>
-        <ThemedView style={styles.content}>
-          <ThemedText type="title" style={styles.title}>
-            Welcome to Home
-          </ThemedText>
-          <ThemedText type="default" style={styles.subtitle}>
-            You have successfully logged in with Firebase!
-          </ThemedText>
-
-          <ThemedView type="backgroundElement" style={styles.infoBox}>
-            <ThemedText type="default">
-              User Email: {storage.getString('userEmail') || 'N/A'}
+        <View style={styles.header}>
+          <View>
+            <ThemedText type="title" style={styles.title}>
+              Portal Mahasiswa
             </ThemedText>
-            <ThemedText type="default" style={styles.infoText}>
-              User Name: {storage.getString('userName') || 'N/A'}
+            <ThemedText type="default" style={styles.welcomeText}>
+              Halo, {storage.getString('userName') || 'User'}
             </ThemedText>
-          </ThemedView>
-        </ThemedView>
+          </View>
+          <Pressable style={styles.logoutIconButton} onPress={handleLogout}>
+            <ThemedText style={styles.logoutIconText}>Keluar</ThemedText>
+          </Pressable>
+        </View>
 
-        <Pressable style={styles.logoutButton} onPress={handleLogout}>
-          <ThemedText style={styles.logoutText}>Logout</ThemedText>
-        </Pressable>
+        {loading ? (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color={LoginColors.primary} />
+          </View>
+        ) : error ? (
+          <View style={styles.centerContainer}>
+            <ThemedText style={styles.errorText}>{error}</ThemedText>
+          </View>
+        ) : (
+          <FlatList
+            data={students}
+            keyExtractor={(item) => item.id}
+            renderItem={renderStudentItem}
+            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <ThemedText style={styles.emptyText}>Tidak ada data mahasiswa</ThemedText>
+              </View>
+            }
+          />
+        )}
       </ThemedView>
     </SafeAreaView>
   );
@@ -55,48 +106,93 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
+    backgroundColor: LoginColors.background,
   },
   container: {
     flex: 1,
-    paddingHorizontal: Spacing.four,
-    paddingVertical: Spacing.four,
-    justifyContent: 'space-between',
+    paddingTop: Spacing.four,
   },
-  content: {
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.four,
+    marginBottom: Spacing.four,
+  },
+  title: {
+    fontSize: 24,
+    color: LoginColors.accent,
+  },
+  welcomeText: {
+    fontSize: 14,
+    opacity: 0.8,
+  },
+  logoutIconButton: {
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.three,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 107, 107, 0.3)',
+  },
+  logoutIconText: {
+    color: '#FF6B6B',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  listContent: {
+    paddingHorizontal: Spacing.four,
+    paddingBottom: Spacing.four,
+    gap: Spacing.three,
+  },
+  studentCard: {
+    padding: Spacing.three,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 140, 66, 0.2)',
+    backgroundColor: 'rgba(26, 31, 46, 0.5)',
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: Spacing.one,
+  },
+  nimText: {
+    fontSize: 12,
+    color: LoginColors.primaryLight,
+    fontWeight: '700',
+  },
+  badge: {
+    backgroundColor: 'rgba(255, 140, 66, 0.15)',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  badgeText: {
+    fontSize: 10,
+    color: LoginColors.accent,
+    fontWeight: '600',
+  },
+  namaText: {
+    fontSize: 16,
+    color: '#FFFFFF',
+  },
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: Spacing.three,
   },
-  title: {
-    textAlign: 'center',
-    marginBottom: Spacing.two,
-  },
-  subtitle: {
-    textAlign: 'center',
-    fontSize: 14,
-    marginBottom: Spacing.four,
-  },
-  infoBox: {
-    padding: Spacing.three,
-    borderRadius: Spacing.three,
-    gap: Spacing.two,
-    width: '100%',
-  },
-  infoText: {
-    marginTop: Spacing.one,
-  },
-  logoutButton: {
-    backgroundColor: '#FF6B35',
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.four,
-    borderRadius: Spacing.three,
+  emptyContainer: {
+    paddingVertical: Spacing.five,
     alignItems: 'center',
-    marginTop: Spacing.four,
   },
-  logoutText: {
-    color: '#FFFFFF',
-    fontWeight: '600',
-    fontSize: 14,
+  emptyText: {
+    opacity: 0.6,
+    fontStyle: 'italic',
+  },
+  errorText: {
+    color: '#FF6B6B',
+    textAlign: 'center',
   },
 });

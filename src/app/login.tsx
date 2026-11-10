@@ -22,29 +22,15 @@ import { storage, TOKEN_KEY } from '@/services/storage';
 import { LoginColors } from '@/constants/loginColors';
 import { Spacing } from '@/constants/theme';
 
-const firebaseAuth = getAuth();
-const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-
 const Envelope = (props: { size: number; color: string; weight?: string }) => <Ionicons name="mail-outline" size={props.size} color={props.color} />;
 const Lock = (props: { size: number; color: string; weight?: string }) => <Ionicons name="lock-closed-outline" size={props.size} color={props.color} />;
 const Eye = (props: { size: number; color: string; weight?: string }) => <Ionicons name="eye-outline" size={props.size} color={props.color} />;
 const EyeSlash = (props: { size: number; color: string; weight?: string }) => <Ionicons name="eye-off-outline" size={props.size} color={props.color} />;
 
-const initializeGoogleSignIn = () => {
-  if (!GOOGLE_WEB_CLIENT_ID) {
-    console.warn('EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID not set in .env');
-    return;
-  }
-
-  GoogleSignin.configure({
-    webClientId: GOOGLE_WEB_CLIENT_ID,
-    offlineAccess: true,
-    scopes: ['profile', 'email'],
-  });
-};
-
-
 export default function LoginScreen() {
+  const firebaseAuth = getAuth();
+  const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -52,8 +38,16 @@ export default function LoginScreen() {
   const [error, setError] = useState('');
 
   React.useEffect(() => {
-    initializeGoogleSignIn();
-  }, []);
+    if (GOOGLE_WEB_CLIENT_ID) {
+      GoogleSignin.configure({
+        webClientId: GOOGLE_WEB_CLIENT_ID,
+        offlineAccess: true,
+        scopes: ['profile', 'email'],
+      });
+    } else {
+      console.warn('EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID not set in .env');
+    }
+  }, [GOOGLE_WEB_CLIENT_ID]);
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
@@ -138,7 +132,7 @@ export default function LoginScreen() {
         <View style={styles.container}>
           <View style={styles.headerSection}>
             <Image
-              source={require('@/../../docs/Logo.png')}
+              source={require('@/assets/images/Logo.png')}
               style={styles.logo}
               resizeMode="contain"
             />

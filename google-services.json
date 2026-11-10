@@ -12,7 +12,20 @@
           "package_name": "com.adityaulya.FirebaseAuthWithReactNative"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "502245804433-k0mngs423g697nm9csmng5togd9g7p7j.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.adityaulya.FirebaseAuthWithReactNative",
+            "certificate_hash": "97eec9ada660071d9ebf4878b5488b587b7171c9"
+          }
+        },
+        {
+          "client_id": "502245804433-4h4c4a2nb496d4n8gmjnksmjhoobpfar.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCToHDsu4LXPcgRmMkG7FnDiGkwOadKRZk"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "502245804433-4h4c4a2nb496d4n8gmjnksmjhoobpfar.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

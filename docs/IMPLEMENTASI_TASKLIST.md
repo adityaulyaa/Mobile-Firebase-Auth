@@ -73,8 +73,8 @@
   - `npx tsc --noEmit`
   - `npm run lint`
 - **5.2 Checklist Akhir**
-  - [ ] Google Sign‑In berhasil, token tersimpan.
-  - [ ] Restart aplikasi → auto‑login langsung ke Home.
-  - [ ] Data Firestore realtime ter‑update di UI.
-  - [ ] Logout menghapus token & kembali ke Login.
-  - [ ] Semua TypeScript lint‑free.
+- [x] Google Sign‑In berhasil, token tersimpan.
+- [x] Restart aplikasi → auto‑login langsung ke Home.
+- [x] Data Firestore realtime ter‑update di UI.
+- [x] Logout menghapus token & kembali ke Login.
+- [x] Semua TypeScript lint‑free.
