@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Pressable, SafeAreaView, FlatList, View, ActivityIndicator } from 'react-native';
-import { getAuth, signOut } from '@react-native-firebase/auth';
-import { GoogleSignin } from '@react-native-google-signin/google-signin';
-import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { storage, TOKEN_KEY } from '@/services/storage';
+import { useAuth } from '@/providers/auth-provider';
 import { subscribeToMahasiswa, Mahasiswa } from '@/services/firestore';
 import { LoginColors } from '@/constants/loginColors';
 
 export default function HomeScreen() {
-  const firebaseAuth = getAuth();
+  const { userName, logout } = useAuth();
   const [students, setStudents] = useState<Mahasiswa[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,16 +31,7 @@ export default function HomeScreen() {
   }, []);
 
   const handleLogout = async () => {
-    try {
-      await GoogleSignin.signOut();
-      await signOut(firebaseAuth);
-      storage.remove(TOKEN_KEY);
-      storage.remove('userEmail');
-      storage.remove('userName');
-      router.replace('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-    }
+    await logout();
   };
 
   const renderStudentItem = ({ item }: { item: Mahasiswa }) => (
@@ -69,7 +57,7 @@ export default function HomeScreen() {
               Portal Mahasiswa
             </ThemedText>
             <ThemedText type="default" style={styles.welcomeText}>
-              Halo, {storage.getString('userName') || 'User'}
+              Halo, {userName || 'User'}
             </ThemedText>
           </View>
           <Pressable style={styles.logoutIconButton} onPress={handleLogout}>

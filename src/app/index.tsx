@@ -1,39 +1,21 @@
-import { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
-import { getAuth } from '@react-native-firebase/auth';
+import { Redirect } from 'expo-router';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
-import { storage, TOKEN_KEY } from '@/services/storage';
 import { LoginColors } from '@/constants/loginColors';
+import { useAuth } from '@/providers/auth-provider';
 
 export default function Index() {
-  const firebaseAuth = getAuth();
+  const { userToken, isLoading } = useAuth();
 
-  useEffect(() => {
-    const checkAuthAndRedirect = async () => {
-      try {
-        const currentUser = firebaseAuth.currentUser;
-        const cachedToken = storage.getString(TOKEN_KEY);
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={LoginColors.primary} />
+      </View>
+    );
+  }
 
-        if (currentUser || cachedToken) {
-          router.replace('/home');
-        } else {
-          router.replace('/login');
-        }
-      } catch (error) {
-        console.error('Auth redirect error:', error);
-        router.replace('/login');
-      }
-    };
-
-    checkAuthAndRedirect();
-  }, [firebaseAuth]);
-
-  return (
-    <View style={styles.container}>
-      <ActivityIndicator size="large" color={LoginColors.primary} />
-    </View>
-  );
+  return <Redirect href={userToken ? '/home' : '/login'} />;
 }
 
 const styles = StyleSheet.create({

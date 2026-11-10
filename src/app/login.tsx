@@ -13,12 +13,11 @@ import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { getAuth, GoogleAuthProvider, signInWithCredential, signInWithEmailAndPassword } from '@react-native-firebase/auth';
 import { GoogleSignin, isSuccessResponse } from '@react-native-google-signin/google-signin';
-import { router } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { FormInput } from '@/components/login/FormInput';
 import { GradientButton } from '@/components/login/GradientButton';
-import { storage, TOKEN_KEY } from '@/services/storage';
+import { useAuth } from '@/providers/auth-provider';
 import { LoginColors } from '@/constants/loginColors';
 import { Spacing } from '@/constants/theme';
 
@@ -29,6 +28,7 @@ const EyeSlash = (props: { size: number; color: string; weight?: string }) => <I
 
 export default function LoginScreen() {
   const firebaseAuth = getAuth();
+  const { login } = useAuth();
   const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 
   const [email, setEmail] = useState('');
@@ -72,11 +72,13 @@ export default function LoginScreen() {
         const credential = GoogleAuthProvider.credential(idToken);
         const result = await signInWithCredential(firebaseAuth, credential);
 
-        storage.set(TOKEN_KEY, idToken);
-        storage.set('userEmail', result.user.email || '');
-        storage.set('userName', result.user.displayName || '');
+        const token = await result.user.getIdToken();
 
-        router.replace('/home');
+        await login({
+          token,
+          name: result.user.displayName ?? '',
+          email: result.user.email ?? '',
+        });
       } else if (response.type === 'cancelled') {
         console.log('Google Sign-In cancelled');
       }
@@ -102,11 +104,12 @@ export default function LoginScreen() {
       const result = await signInWithEmailAndPassword(firebaseAuth, email, password);
 
       const token = await result.user.getIdToken();
-      storage.set(TOKEN_KEY, token);
-      storage.set('userEmail', result.user.email || '');
-      storage.set('userName', result.user.displayName || '');
 
-      router.replace('/home');
+      await login({
+        token,
+        name: result.user.displayName ?? '',
+        email: result.user.email ?? '',
+      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Sign in failed';
       setError(errorMessage);
