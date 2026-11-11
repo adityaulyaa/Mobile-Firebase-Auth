@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   container: {
     borderRadius: 28,
     overflow: 'hidden',
-    height: 56,
+    minHeight: 54,
   },
   gradient: {
     flex: 1,
